@@ -5,12 +5,13 @@
 #include <float.h>
 
 
-
+// creating the structure of node
 typedef struct {
     int to;
     float weight;
 } Edge;
 
+// creating the data structure Vector that will contain the Egdes to represent our graph
 typedef struct {
     Edge* data;     
     int size;      
@@ -19,14 +20,14 @@ typedef struct {
 
 Vector adj[MAX_VEHICULES];
 
-
+// this function clears our graph it resets it 
 void clearGraph() {
-
     for(int i=0; i<MAX_VEHICULES; i++) {
         adj[i].size = 0;       
     }
 }
 
+// function that adds an edge to out graph
 void addEdge(int u, int v, float weight) {
     Vector* vec = &adj[u];
 
@@ -51,7 +52,7 @@ void addEdge(int u, int v, float weight) {
 
 int parent[MAX_VEHICULES];
 int rank[MAX_VEHICULES];
-
+// implement the dsu as we saw in the course we will use it in some algorithm later 
 void make_set(int v) {
     parent[v] = v;
     rank[v] = 0;
@@ -74,7 +75,8 @@ void union_sets(int a, int b) {
     }
 }
 
-
+// this function analyzes the graph we have and give us information 
+// about the different sets we have and their number
 void analyzeClusters() {
     printf("\n--- GRAPH ANALYSIS: CLUSTERS (DSU) ---\n");
 
@@ -106,6 +108,7 @@ void analyzeClusters() {
     printf("Total Independent Communities: %d\n", componentCount);
 }
 
+// this function implements dijkstra to find the fatest path between two vehicules 
 void findFastestPath(int startIdx, int targetIdx) {
     float dist[MAX_VEHICULES];
     int prev[MAX_VEHICULES];
