@@ -231,17 +231,48 @@ void computeBackboneMST() {
         }
     }
 
+    typedef struct {
+        int parent_id;
+        int child_id;
+    } Link;
+
+    Link links[MAX_VEHICULES];
     int linkCount = 0;
+
     for (int i = 1; i < MAX_VEHICULES; i++) {
         if (parent[i] != -1) {
+            links[linkCount].parent_id = allVehicules[parent[i]].id;
+            links[linkCount].child_id = allVehicules[i].id;
             linkCount++;
-            printf("\x1b[33m▸\x1b[0m Backbone Link: \x1b[32mID %d\x1b[0m \x1b[36m⟷\x1b[0m \x1b[32mID %d\x1b[0m\n",
-                   allVehicules[parent[i]].id, allVehicules[i].id);
         }
     }
-    printf("\n\x1b[35m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
-    printf("Total MST Links: \x1b[1m%d\x1b[0m\n", linkCount);
-    printf("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\x1b[0m\n");
+
+    if (linkCount > 0) {
+        printf("\x1b[36m");
+        printf("                   🌳 Network Tree Structure 🌳\n\n");
+        printf("\x1b[0m");
+
+        int linksPerRow = 3;
+        for (int i = 0; i < linkCount; i++) {
+            if (i % linksPerRow == 0) {
+                if (i > 0) printf("\n");
+                printf("        ");
+            }
+
+            printf("\x1b[32m%3d\x1b[0m\x1b[35m━\x1b[36m⬤\x1b[35m━\x1b[0m\x1b[32m%-3d\x1b[0m",
+                   links[i].parent_id, links[i].child_id);
+
+            if ((i + 1) % linksPerRow != 0 && i < linkCount - 1) {
+                printf("  ");
+            }
+        }
+
+        printf("\n\n\x1b[35m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
+        printf("📊 Network Statistics: \x1b[1m%d\x1b[0m\x1b[35m backbone connections established\n", linkCount);
+        printf("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\x1b[0m\n");
+    } else {
+        printf("\x1b[31m✗ No MST links found (disconnected graph)\x1b[0m\n");
+    }
 }
 
 void identifyCriticalVehicles() {

@@ -63,16 +63,48 @@ void printStatus(int timeStep, int infectedNumber) {
     printf(COLOR_RESET);
 }
 
-void runCompleteSimulation(int *timeStep, int *infectedNumber) {
-    printf("\n" COLOR_MAGENTA COLOR_BOLD "▶ Running complete simulation (60 time steps)..." COLOR_RESET "\n");
+void printProgressBar(int current, int total, int infected) {
+    int barWidth = 40;
+    float progress = (float)current / total;
+    int pos = barWidth * progress;
 
-    while(*timeStep <= 60) {
+    printf("\r" COLOR_CYAN "Progress: " COLOR_RESET "[");
+    for (int i = 0; i < barWidth; i++) {
+        if (i < pos) printf(COLOR_GREEN "█" COLOR_RESET);
+        else if (i == pos) printf(COLOR_GREEN "▶" COLOR_RESET);
+        else printf(COLOR_BLUE "░" COLOR_RESET);
+    }
+    printf("] " COLOR_YELLOW "%3d%%" COLOR_RESET " | T=%d/%d | " COLOR_RED "🦠 %d" COLOR_RESET,
+           (int)(progress * 100), current, total, infected);
+    fflush(stdout);
+}
+
+void runCompleteSimulation(int *timeStep, int *infectedNumber) {
+    printf("\n" COLOR_MAGENTA COLOR_BOLD "▶ Running complete simulation (60 time steps)..." COLOR_RESET "\n\n");
+
+    int maxTime = 60;
+    int lastInfected = 0;
+    int newInfections = 0;
+
+    while(*timeStep <= maxTime) {
+        lastInfected = *infectedNumber;
         runStep(1.0f);
         infectVehicules(*timeStep, infectedNumber);
+
+        newInfections = *infectedNumber - lastInfected;
+        if(newInfections > 0 && *timeStep % 5 == 0) {
+            printf("\n" COLOR_YELLOW "⚡ T=%d: +%d new infections" COLOR_RESET, *timeStep, newInfections);
+        }
+
+        if(*timeStep % 2 == 0 || *timeStep == maxTime) {
+            printProgressBar(*timeStep, maxTime, *infectedNumber);
+        }
+
         (*timeStep)++;
     }
 
-    printf(COLOR_GREEN "✓ Simulation complete!\n" COLOR_RESET);
+    printf("\n\n" COLOR_GREEN COLOR_BOLD "✓ Simulation complete!" COLOR_RESET "\n");
+    printf(COLOR_CYAN "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n" COLOR_RESET);
     printStatus(*timeStep - 1, *infectedNumber);
 }
 
@@ -82,15 +114,24 @@ void runToTime(int *timeStep, int *infectedNumber, int targetTime) {
         return;
     }
 
-    printf("\n" COLOR_MAGENTA COLOR_BOLD "▶ Running to T=%d..." COLOR_RESET "\n", targetTime);
+    printf("\n" COLOR_MAGENTA COLOR_BOLD "▶ Running to T=%d..." COLOR_RESET "\n\n", targetTime);
+
+    int startTime = *timeStep;
+    int duration = targetTime - startTime;
 
     while(*timeStep <= targetTime) {
         runStep(1.0f);
         infectVehicules(*timeStep, infectedNumber);
+
+        if((*timeStep - startTime) % 2 == 0 || *timeStep == targetTime) {
+            printProgressBar(*timeStep - startTime, duration, *infectedNumber);
+        }
+
         (*timeStep)++;
     }
 
-    printf(COLOR_GREEN "✓ Reached T=%d\n" COLOR_RESET, targetTime);
+    printf("\n\n" COLOR_GREEN COLOR_BOLD "✓ Reached T=%d" COLOR_RESET "\n", targetTime);
+    printf(COLOR_CYAN "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n" COLOR_RESET);
     printStatus(*timeStep - 1, *infectedNumber);
 }
 
