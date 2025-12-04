@@ -117,11 +117,90 @@ void analyzeClusters() {
     printf("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\x1b[0m\n");
 }
 
-// this function implements dijkstra to find the fatest path between two vehicules 
+typedef struct {
+    int vertex;
+    float distance;
+} HeapNode;
+
+typedef struct {
+    HeapNode data[MAX_VEHICULES];
+    int size;
+} MinHeap;
+
+void heapInit(MinHeap* heap) {
+    heap->size = 0;
+}
+
+void heapSwap(HeapNode* a, HeapNode* b) {
+    HeapNode temp = *a;
+    *a = *b;
+    *b = temp;
+}
+
+void heapifyUp(MinHeap* heap, int idx) {
+    while (idx > 0) {
+        int parent = (idx - 1) / 2;
+        if (heap->data[idx].distance < heap->data[parent].distance) {
+            heapSwap(&heap->data[idx], &heap->data[parent]);
+            idx = parent;
+        } else {
+            break;
+        }
+    }
+}
+
+void heapifyDown(MinHeap* heap, int idx) {
+    while (1) {
+        int left = 2 * idx + 1;
+        int right = 2 * idx + 2;
+        int smallest = idx;
+
+        if (left < heap->size && heap->data[left].distance < heap->data[smallest].distance) {
+            smallest = left;
+        }
+        if (right < heap->size && heap->data[right].distance < heap->data[smallest].distance) {
+            smallest = right;
+        }
+
+        if (smallest != idx) {
+            heapSwap(&heap->data[idx], &heap->data[smallest]);
+            idx = smallest;
+        } else {
+            break;
+        }
+    }
+}
+
+void heapPush(MinHeap* heap, int vertex, float distance) {
+    if (heap->size >= MAX_VEHICULES) return;
+
+    heap->data[heap->size].vertex = vertex;
+    heap->data[heap->size].distance = distance;
+    heapifyUp(heap, heap->size);
+    heap->size++;
+}
+
+HeapNode heapPop(MinHeap* heap) {
+    HeapNode root = heap->data[0];
+    heap->size--;
+    if (heap->size > 0) {
+        heap->data[0] = heap->data[heap->size];
+        heapifyDown(heap, 0);
+    }
+    return root;
+}
+
+int heapIsEmpty(MinHeap* heap) {
+    return heap->size == 0;
+}
+
 void findFastestPath(int startIdx, int targetIdx) {
     float dist[MAX_VEHICULES];
     int prev[MAX_VEHICULES];
     int visited[MAX_VEHICULES];
+    MinHeap pq;
+
+    heapInit(&pq);
 
     for (int i = 0; i < MAX_VEHICULES; i++) {
         dist[i] = FLT_MAX;
@@ -130,29 +209,26 @@ void findFastestPath(int startIdx, int targetIdx) {
     }
 
     dist[startIdx] = 0;
+    heapPush(&pq, startIdx, 0.0f);
 
-    for (int count = 0; count < MAX_VEHICULES - 1; count++) {
-        float min = FLT_MAX;
-        int u = -1;
-        
-        for (int v = 0; v < MAX_VEHICULES; v++) {
-            if (!visited[v] && dist[v] <= min) {
-                min = dist[v];
-                u = v;
-            }
-        }
+    while (!heapIsEmpty(&pq)) {
+        HeapNode current = heapPop(&pq);
+        int u = current.vertex;
 
-        if (u == -1 || u == targetIdx) break;
+        if (visited[u]) continue;
+        if (u == targetIdx) break;
+
         visited[u] = 1;
 
         for (int i = 0; i < adj[u].size; i++) {
             Edge e = adj[u].data[i];
             int v = e.to;
             float weight = e.weight;
-            
-            if (!visited[v] && dist[u] != FLT_MAX && dist[u] + weight < dist[v]) {
+
+            if (!visited[v] && dist[u] + weight < dist[v]) {
                 dist[v] = dist[u] + weight;
                 prev[v] = u;
+                heapPush(&pq, v, dist[v]);
             }
         }
     }
