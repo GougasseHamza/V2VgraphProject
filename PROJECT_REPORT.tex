@@ -10,24 +10,6 @@
 \usepackage{enumitem}
 \usepackage{titlesec}
 \usepackage{fancyhdr}
-\usepackage{pmboxdraw}
-\usepackage{newunicodechar}
-
-% Define emoji replacements for better compatibility
-\newunicodechar{🌳}{\textbf{[Tree]}}
-\newunicodechar{🦠}{\textbf{[Virus]}}
-\newunicodechar{🚗}{\textbf{[Car]}}
-\newunicodechar{📡}{\textbf{[Signal]}}
-\newunicodechar{⚡}{\textbf{[Lightning]}}
-\newunicodechar{★}{\textbf{*}}
-\newunicodechar{📊}{\textbf{[Chart]}}
-\newunicodechar{⏱}{\textbf{[T]}}
-\newunicodechar{✓}{\textbf{[OK]}}
-\newunicodechar{⚠}{\textbf{[!]}}
-
-% Define block characters for progress bar
-\newcommand{\textblock}{\rule{0.5em}{0.8em}}
-\newcommand{\textlightblock}{\rule{0.5em}{0.1em}}
 
 % Code listing style
 \lstset{
@@ -39,16 +21,7 @@
     backgroundcolor=\color{gray!10},
     keywordstyle=\color{blue},
     commentstyle=\color{green!60!black},
-    stringstyle=\color{red},
-    literate=
-        {█}{{\textblock}}1
-        {░}{{\textlightblock}}1
-        {▶}{{$\blacktriangleright$}}1
-        {▸}{{$\triangleright$}}1
-        {⬤}{{$\bullet$}}1
-        {←}{{$\leftarrow$}}1
-        {→}{{$\rightarrow$}}1
-        {➤}{{$\Rightarrow$}}1
+    stringstyle=\color{red}
 }
 
 % Hyperref setup
@@ -321,76 +294,57 @@ This seminal paper establishes the security challenges in V2V networks and demon
 
 \subsection{Sample Execution Output}
 
-The system produces richly formatted, color-coded output with Unicode box-drawing characters and visual indicators:
+The system produces richly formatted, color-coded output with Unicode box-drawing characters and visual indicators for enhanced user experience.
 
-\begin{lstlisting}[basicstyle=\ttfamily\footnotesize]
-╔════════════════════════════════════════════════════════════╗
-║           V 2 V   S I M U L A T I O N                     ║
-║         Vehicle-to-Vehicle Network Analyzer               ║
-╚════════════════════════════════════════════════════════════╝
+\subsubsection{Simulation Header and Progress}
 
-Progress: [████████████████████████████████████████] 100% | T=60/60 | 🦠 45
+% INSERT SCREENSHOT: Main simulation header and progress bar
+\begin{figure}[h]
+\centering
+\fbox{\includegraphics[width=0.85\textwidth]{screenshot_simulation_header.png}}
+\caption{Simulation initialization and progress tracking with animated progress bar}
+\label{fig:sim_header}
+\end{figure}
 
-╔═══════════════════════════════════════════════════════════╗
-║                    CURRENT STATUS                         ║
-╠═══════════════════════════════════════════════════════════╣
-║  ⏱  Time Step:      60                                     ║
-║  🦠 Infected Count: 45                                     ║
-║  🚗 Total Vehicles: 50                                     ║
-║  📡 Danger Radius:  300                                    ║
-╚═══════════════════════════════════════════════════════════╝
+\subsubsection{Cluster Analysis Output}
 
-╔═══════════════════════════════════════════════════════════╗
-║          GRAPH ANALYSIS: CLUSTERS (DSU)                  ║
-╚═══════════════════════════════════════════════════════════╝
+% INSERT SCREENSHOT: Cluster detection (DSU) results
+\begin{figure}[h]
+\centering
+\fbox{\includegraphics[width=0.85\textwidth]{screenshot_clusters.png}}
+\caption{Cluster analysis showing vehicle communities detected using Disjoint Set Union}
+\label{fig:clusters}
+\end{figure}
 
-▸ Cluster 1 (Root: ID 370)
-  Members: { 404 745 170 669 933 299 ... }
+\subsubsection{Backbone Network (MST) Visualization}
 
-▸ Cluster 2 (Root: ID 523)
-  Members: { 523 997 37 536 331 538 ... }
+% INSERT SCREENSHOT: MST backbone display
+\begin{figure}[h]
+\centering
+\fbox{\includegraphics[width=0.85\textwidth]{screenshot_mst.png}}
+\caption{Network backbone visualization using Prim's MST algorithm with tree structure display}
+\label{fig:mst}
+\end{figure}
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Total Independent Communities: 2
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+\subsubsection{Critical Hub Identification}
 
-╔═══════════════════════════════════════════════════════════╗
-║         GRAPH ANALYSIS: BACKBONE (MST)                   ║
-╚═══════════════════════════════════════════════════════════╝
+% INSERT SCREENSHOT: Critical hubs analysis
+\begin{figure}[h]
+\centering
+\fbox{\includegraphics[width=0.85\textwidth]{screenshot_hubs.png}}
+\caption{Critical vehicle hub identification based on degree centrality analysis}
+\label{fig:hubs}
+\end{figure}
 
-                   🌳 Network Tree Structure 🌳
+\subsubsection{Optimal Path Computation}
 
-        404━⬤━745  404━⬤━170  233━⬤━669
-        523━⬤━997  745━⬤━933  170━⬤━299
-        ...
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📊 Network Statistics: 49 backbone connections established
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-╔═══════════════════════════════════════════════════════════╗
-║         GRAPH ANALYSIS: CRITICAL HUBS                    ║
-╚═══════════════════════════════════════════════════════════╝
-
-★ Critical Hub Identified:
-  Vehicle ID: 523
-  Connections: 10
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-This vehicle is the most connected hub in the network.
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-╔═══════════════════════════════════════════════════════════╗
-║         GRAPH ANALYSIS: OPTIMAL PATH                     ║
-╚═══════════════════════════════════════════════════════════╝
-
-➤ Route: ID 404 → ID 933
-
-Path: 933 ← 773 ← 370 ← 27 ← 618 ← 851 ← 982 ← 573 ← 404
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Total Distance: 1876.00 units
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-\end{lstlisting}
+% INSERT SCREENSHOT: Dijkstra shortest path result
+\begin{figure}[h]
+\centering
+\fbox{\includegraphics[width=0.85\textwidth]{screenshot_path.png}}
+\caption{Fastest propagation path computed using min-heap optimized Dijkstra's algorithm}
+\label{fig:path}
+\end{figure}
 
 \subsection{Analysis of Results}
 
@@ -426,13 +380,14 @@ Total Distance: 1876.00 units
 \subsection{User Interface and Visualization}
 
 \begin{itemize}
-    \item \textbf{Rich Terminal Output:} ANSI color codes for enhanced readability (cyan, green, yellow, red, magenta)
-    \item \textbf{Unicode Graphics:} Box-drawing characters (╔═╗ ║ ╚═╝ ━) and emojis (🌳 🦠 🚗 📡 ⚡ ★ 📊) for visual appeal
+    \item \textbf{Rich Terminal Output:} ANSI color codes for enhanced readability and visual organization
+    \item \textbf{Unicode Graphics:} Box-drawing characters and emojis for professional visual appeal
     \item \textbf{Progress Indicators:} Real-time animated progress bars showing simulation advancement
-    \item \textbf{Interactive Menu:} User-friendly menu system allowing step-by-step analysis
-    \item \textbf{Visual Tree Structure:} MST backbone displayed as tree with connection symbols (━⬤━)
-    \item \textbf{Formatted Paths:} Dijkstra paths shown with directional arrows (←) for clarity
-    \item \textbf{Status Dashboard:} Real-time statistics display with infection counts and network metrics
+    \item \textbf{Interactive Menu:} User-friendly menu system allowing step-by-step analysis and exploration
+    \item \textbf{Visual Tree Structure:} MST backbone displayed as hierarchical tree with connection symbols
+    \item \textbf{Formatted Paths:} Dijkstra paths shown with directional arrows for enhanced clarity
+    \item \textbf{Status Dashboard:} Comprehensive real-time statistics display with infection counts and network metrics
+    \item \textbf{Organized Output Sections:} Clearly delineated sections for each algorithm with bordered headers
 \end{itemize}
 
 \subsection{Scalability}
