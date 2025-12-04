@@ -10,6 +10,24 @@
 \usepackage{enumitem}
 \usepackage{titlesec}
 \usepackage{fancyhdr}
+\usepackage{pmboxdraw}
+\usepackage{newunicodechar}
+
+% Define emoji replacements for better compatibility
+\newunicodechar{🌳}{\textbf{[Tree]}}
+\newunicodechar{🦠}{\textbf{[Virus]}}
+\newunicodechar{🚗}{\textbf{[Car]}}
+\newunicodechar{📡}{\textbf{[Signal]}}
+\newunicodechar{⚡}{\textbf{[Lightning]}}
+\newunicodechar{★}{\textbf{*}}
+\newunicodechar{📊}{\textbf{[Chart]}}
+\newunicodechar{⏱}{\textbf{[T]}}
+\newunicodechar{✓}{\textbf{[OK]}}
+\newunicodechar{⚠}{\textbf{[!]}}
+
+% Define block characters for progress bar
+\newcommand{\textblock}{\rule{0.5em}{0.8em}}
+\newcommand{\textlightblock}{\rule{0.5em}{0.1em}}
 
 % Code listing style
 \lstset{
@@ -21,7 +39,16 @@
     backgroundcolor=\color{gray!10},
     keywordstyle=\color{blue},
     commentstyle=\color{green!60!black},
-    stringstyle=\color{red}
+    stringstyle=\color{red},
+    literate=
+        {█}{{\textblock}}1
+        {░}{{\textlightblock}}1
+        {▶}{{$\blacktriangleright$}}1
+        {▸}{{$\triangleright$}}1
+        {⬤}{{$\bullet$}}1
+        {←}{{$\leftarrow$}}1
+        {→}{{$\rightarrow$}}1
+        {➤}{{$\Rightarrow$}}1
 }
 
 % Hyperref setup
