@@ -1,0 +1,129 @@
+\documentclass[aspectratio=169]{beamer}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{graphicx}
+\usepackage{xcolor}
+
+% Define colors
+\definecolor{darkheader}{RGB}{44,62,80}
+\definecolor{orangeline}{RGB}{230,126,34}
+\definecolor{lightgray}{RGB}{236,240,241}
+
+% Beamer theme customization
+\useoutertheme{infolines}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{footline}{}
+\setbeamertemplate{headline}{}
+
+% Custom title page
+\setbeamertemplate{title page}{
+    \begin{centering}
+        \vspace{3cm}
+        {\Huge\textbf{\inserttitle}\par}
+        \vspace{0.3cm}
+        {\color{orangeline}\rule{0.6\textwidth}{2pt}\par}
+        \vfill
+    \end{centering}
+}
+
+% Custom frame title
+\setbeamertemplate{frametitle}{
+    \nointerlineskip
+    \begin{beamercolorbox}[wd=\paperwidth,ht=1.2cm,dp=0.3cm]{frametitle}
+        \hspace{0.3cm}\Large\textbf{\insertframetitle}
+        \hfill
+        \raisebox{-0.3cm}{\includegraphics[height=0.8cm]{ump_logo.png}}
+        \hspace{0.3cm}
+    \end{beamercolorbox}
+    {\color{orangeline}\rule{\paperwidth}{3pt}}
+}
+
+\setbeamercolor{frametitle}{fg=white,bg=darkheader}
+\setbeamercolor{background canvas}{bg=lightgray}
+
+% Itemize styling
+\setbeamertemplate{itemize items}[circle]
+\setbeamercolor{itemize item}{fg=black}
+\setbeamercolor{itemize subitem}{fg=black}
+
+\title{Final project}
+\author{}
+\date{}
+
+\begin{document}
+
+% Title page
+{
+\setbeamercolor{background canvas}{bg=white}
+\begin{frame}[plain]
+    \titlepage
+\end{frame}
+}
+
+% Slide 2: Project Description
+\begin{frame}[t]{Compromised vehicle threat propagation simulator}
+    \vspace{0.5cm}
+    \small
+    Design and implement an application (using C language) that simulates how a malware propagates across a Vehicle-to-Vehicle (V2V) communication network. Vehicles are represented as nodes, and communication links as edges with weights capturing propagation characteristics. Edge weights may represent:
+
+    \vspace{0.3cm}
+    \begin{itemize}
+        \item Propagation time (delay)
+        \item Infection probability
+        \item Trust or vulnerability score
+        \item Any other justified metric
+    \end{itemize}
+
+    \vspace{0.3cm}
+    Your program must analyse the spread of compromise, identify critical vehicles, and compute optimal propagation routes. Implement at least \textbf{four} of the following graph-based functionalities:
+
+    \vspace{0.2cm}
+    \begin{enumerate}
+        \item Infection spread wave from an initially compromised vehicle
+        \item Fastest or most-likely propagation path to a target
+        \item All-pairs propagation analysis
+        \item Detection of propagation clusters or communities
+        \item Backbone of propagation
+        \item Detection of problematic cycles
+    \end{enumerate}
+\end{frame}
+
+% Slide 3: Submission Requirements
+\begin{frame}[t]{Compromised vehicle threat propagation simulator}
+    \vspace{0.5cm}
+    \small
+    \textbf{Submission (Dec. 4, before midnight on Canevas)} Upload a single \texttt{.zip} containing:
+
+    \vspace{0.3cm}
+    \begin{itemize}
+        \item \textbf{PDF Report} (3--4 pages):
+        \begin{itemize}
+            \small
+            \item Graph modelling + assumptions + justification of edge weights
+            \item A detailed attack scenario (malware description, impacted asset, attacker profile..)
+            \item Justification of at least 4 selected graph/tree algorithms
+            \item Reference to 1+ research paper on graph theory in vehicular networks
+            \item Sample input--output
+        \end{itemize}
+        \item \textbf{C Project Files}:
+        \begin{itemize}
+            \small
+            \item Clean, well-commented code
+            \item Proper header files
+            \item Acknowledgment of external sources
+        \end{itemize}
+    \end{itemize}
+
+    \vspace{0.3cm}
+    \textbf{Demonstration (Dec. 5, afternoon)}
+
+    \vspace{0.2cm}
+    \begin{itemize}
+        \item Teams of 2, \textbf{5-minute} demo
+        \item One summary slide: modelled graph + key decisions
+        \item Live run showing sample input/output
+    \end{itemize}
+\end{frame}
+
+\end{document}
