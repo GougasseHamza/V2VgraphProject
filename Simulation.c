@@ -59,7 +59,7 @@ void runStep(float dt){
 // this function will help us to print an infection 
 // just to make the code clear and a readable output 
 void printInfection(int time, Vehicule infected, Vehicule source){
-    printf("[T=%d] INFECTION: ID %d -> ID %d (Pos: %.0f)\n", 
+    printf("\x1b[31m🦠 [T=%d]\x1b[0m Infection: \x1b[33mID %d\x1b[0m → \x1b[31mID %d\x1b[0m (Position: \x1b[36m%.0f\x1b[0m)\n",
            time, source.id, infected.id, infected.position);
 }
 
