@@ -196,7 +196,7 @@ Our system implements \textbf{four specialized graph algorithms} to analyze malw
 
 \subsection{Algorithm 2: Fastest Propagation Path (Dijkstra's Algorithm)}
 
-\textbf{Algorithm:} Dijkstra's Shortest Path\\
+\textbf{Algorithm:} Dijkstra's Shortest Path with Min-Heap Optimization\\
 \textbf{Purpose:} Find the optimal route for malware to reach a target vehicle
 
 \textbf{Justification:}
@@ -204,14 +204,17 @@ Our system implements \textbf{four specialized graph algorithms} to analyze malw
     \item Identifies the minimum-weight path from Patient Zero to any target
     \item Reveals the most vulnerable propagation routes
     \item Critical for predicting which vehicles will be infected next
-    \item Time Complexity: $O(V^2)$ with array-based priority queue
+    \item Time Complexity: $O((V+E) \log V)$ with binary min-heap priority queue
 \end{itemize}
 
 \textbf{Implementation Details:}
 \begin{itemize}
+    \item Uses custom binary min-heap for efficient priority queue operations
+    \item Heap operations: heapifyUp, heapifyDown for $O(\log V)$ insert/extract
     \item Maintains distance array tracking shortest path to each node
     \item Reconstructs complete path using predecessor tracking
     \item Handles disconnected graphs gracefully
+    \item Early termination when target node is reached
 \end{itemize}
 
 \textbf{Security Insight:} Blocking vehicles along this critical path could delay or prevent infection spread to high-value targets.
@@ -291,35 +294,75 @@ This seminal paper establishes the security challenges in V2V networks and demon
 
 \subsection{Sample Execution Output}
 
+The system produces richly formatted, color-coded output with Unicode box-drawing characters and visual indicators:
+
 \begin{lstlisting}[basicstyle=\ttfamily\footnotesize]
-=== V2V SIMULATION ===
-Vehicles: 50 | Radius: 300
+╔════════════════════════════════════════════════════════════╗
+║           V 2 V   S I M U L A T I O N                     ║
+║         Vehicle-to-Vehicle Network Analyzer               ║
+╚════════════════════════════════════════════════════════════╝
 
-[T=9] INFECTION: ID 170 -> ID 170 (Pos: 2903)
-[T=9] INFECTION: ID 669 -> ID 669 (Pos: 2789)
-[T=10] INFECTION: ID 745 -> ID 745 (Pos: 3118)
-...
+Progress: [████████████████████████████████████████] 100% | T=60/60 | 🦠 45
 
->>> SNAPSHOT T=20 <<<
-Infected Count: 19
+╔═══════════════════════════════════════════════════════════╗
+║                    CURRENT STATUS                         ║
+╠═══════════════════════════════════════════════════════════╣
+║  ⏱  Time Step:      60                                     ║
+║  🦠 Infected Count: 45                                     ║
+║  🚗 Total Vehicles: 50                                     ║
+║  📡 Danger Radius:  300                                    ║
+╚═══════════════════════════════════════════════════════════╝
 
---- GRAPH ANALYSIS: CLUSTERS (DSU) ---
-Cluster 1 (Root ID 370): { 404 745 170 669 933 299 ... }
-Cluster 2 (Root ID 523): { 523 997 37 536 331 538 ... }
+╔═══════════════════════════════════════════════════════════╗
+║          GRAPH ANALYSIS: CLUSTERS (DSU)                  ║
+╚═══════════════════════════════════════════════════════════╝
+
+▸ Cluster 1 (Root: ID 370)
+  Members: { 404 745 170 669 933 299 ... }
+
+▸ Cluster 2 (Root: ID 523)
+  Members: { 523 997 37 536 331 538 ... }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Total Independent Communities: 2
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
---- GRAPH ANALYSIS: BACKBONE (MST) ---
-Backbone Link: ID 404 <---> ID 745
-Backbone Link: ID 404 <---> ID 170
-Backbone Link: ID 233 <---> ID 669
-...
+╔═══════════════════════════════════════════════════════════╗
+║         GRAPH ANALYSIS: BACKBONE (MST)                   ║
+╚═══════════════════════════════════════════════════════════╝
 
---- GRAPH ANALYSIS: CRITICAL HUBS ---
-Critical Node: ID 523 (Connections: 10)
+                   🌳 Network Tree Structure 🌳
 
---- GRAPH ANALYSIS: OPTIMAL PATH (ID 404 -> ID 933) ---
-Path: 933 <- 773 <- 370 <- 27 <- 618 <- 851 <- 982 <- 573 <- 404
-Total Weight: 1876.00
+        404━⬤━745  404━⬤━170  233━⬤━669
+        523━⬤━997  745━⬤━933  170━⬤━299
+        ...
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📊 Network Statistics: 49 backbone connections established
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+╔═══════════════════════════════════════════════════════════╗
+║         GRAPH ANALYSIS: CRITICAL HUBS                    ║
+╚═══════════════════════════════════════════════════════════╝
+
+★ Critical Hub Identified:
+  Vehicle ID: 523
+  Connections: 10
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+This vehicle is the most connected hub in the network.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+╔═══════════════════════════════════════════════════════════╗
+║         GRAPH ANALYSIS: OPTIMAL PATH                     ║
+╚═══════════════════════════════════════════════════════════╝
+
+➤ Route: ID 404 → ID 933
+
+Path: 933 ← 773 ← 370 ← 27 ← 618 ← 851 ← 982 ← 573 ← 404
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Total Distance: 1876.00 units
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 \end{lstlisting}
 
 \subsection{Analysis of Results}
@@ -328,7 +371,7 @@ Total Weight: 1876.00
 
 \textbf{Observation 2:} Vehicle 523 becomes a critical hub with 10 connections, making it a super-spreader candidate.
 
-\textbf{Observation 3:} The path from Patient Zero (404) to vehicle 933 requires 8 hops with total distance 1876 units, demonstrating multi-hop propagation.
+\textbf{Observation 3:} The optimal path from Patient Zero (404) to vehicle 933 requires 8 hops with total distance 1876.00 units, demonstrating multi-hop propagation efficiently computed using the min-heap optimized Dijkstra algorithm.
 
 \textbf{Observation 4:} By T=40, the clusters merge as vehicles move, and 90\% of the fleet is infected, showing the danger of dynamic topology.
 
@@ -337,9 +380,11 @@ Total Weight: 1876.00
 \subsection{Data Structures}
 
 \begin{itemize}
-    \item \textbf{Dynamic Adjacency List:} Vector-based structure with automatic resizing
+    \item \textbf{Dynamic Adjacency List:} Vector-based structure with automatic resizing for efficient graph representation
+    \item \textbf{Binary Min-Heap:} Custom priority queue implementation for Dijkstra's algorithm with $O(\log V)$ operations
     \item \textbf{Efficient Graph Representation:} $O(V+E)$ space complexity
     \item \textbf{Spatial Optimization:} Binary search for proximity detection reduces edge creation from $O(V^2)$ to $O(V \log V)$
+    \item \textbf{Disjoint Set Union (DSU):} Path compression and rank-based union for near-constant time operations
 \end{itemize}
 
 \subsection{Code Quality}
@@ -349,6 +394,18 @@ Total Weight: 1876.00
     \item \textbf{Header Files:} Proper separation of interface and implementation
     \item \textbf{Memory Management:} Careful allocation/deallocation to prevent leaks
     \item \textbf{Comments:} Comprehensive documentation throughout the codebase
+\end{itemize}
+
+\subsection{User Interface and Visualization}
+
+\begin{itemize}
+    \item \textbf{Rich Terminal Output:} ANSI color codes for enhanced readability (cyan, green, yellow, red, magenta)
+    \item \textbf{Unicode Graphics:} Box-drawing characters (╔═╗ ║ ╚═╝ ━) and emojis (🌳 🦠 🚗 📡 ⚡ ★ 📊) for visual appeal
+    \item \textbf{Progress Indicators:} Real-time animated progress bars showing simulation advancement
+    \item \textbf{Interactive Menu:} User-friendly menu system allowing step-by-step analysis
+    \item \textbf{Visual Tree Structure:} MST backbone displayed as tree with connection symbols (━⬤━)
+    \item \textbf{Formatted Paths:} Dijkstra paths shown with directional arrows (←) for clarity
+    \item \textbf{Status Dashboard:} Real-time statistics display with infection counts and network metrics
 \end{itemize}
 
 \subsection{Scalability}
@@ -369,16 +426,19 @@ This project successfully demonstrates how graph theory provides powerful tools 
     \item \textbf{Network topology matters:} Critical hubs and clustering significantly impact spread dynamics
     \item \textbf{Graph algorithms provide actionable insights:} Identifying critical vehicles, optimal paths, and network backbone enables targeted defense strategies
     \item \textbf{Dynamic networks pose unique challenges:} Time-varying topology requires continuous monitoring
+    \item \textbf{Algorithm optimization is crucial:} Min-heap implementation of Dijkstra reduces complexity from $O(V^2)$ to $O((V+E) \log V)$, enabling real-time analysis of larger networks
+    \item \textbf{User experience matters:} Rich terminal visualization with colors, Unicode graphics, and progress indicators significantly enhances analysis comprehension
 \end{enumerate}
 
 \subsection{Future Enhancements}
 
 \begin{itemize}
-    \item 2D/3D road networks with intersections
+    \item 2D/3D road networks with intersections and realistic traffic patterns
     \item Heterogeneous transmission rates (different malware variants)
-    \item Mitigation strategies (patching, isolation)
-    \item Visualization of infection spread
-    \item Integration of Floyd-Warshall for all-pairs analysis
+    \item Mitigation strategies (patching, isolation, network segmentation)
+    \item Integration of Floyd-Warshall for all-pairs shortest path analysis
+    \item Graphical visualization with real-time animation of infection spread
+    \item Network resilience analysis and attack surface reduction strategies
 \end{itemize}
 
 \newpage
