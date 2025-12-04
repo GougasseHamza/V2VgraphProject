@@ -11,11 +11,10 @@ typedef struct {
     float weight;
 } Edge;
 
-// Dynamic Array Structure
 typedef struct {
-    Edge* data;     // Pointer to the array on heap
-    int size;       // Current number of elements
-    int capacity;   // Max elements before realloc needed
+    Edge* data;     
+    int size;      
+    int capacity; 
 } Vector;
 
 Vector adj[MAX_VEHICULES];

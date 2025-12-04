@@ -8,6 +8,7 @@
 
 float nextStepProb[MAX_VEHICULES]; 
 
+// this function will initialze our graph 
 void initGraph(){
     clearGraph();
 }
@@ -43,7 +44,9 @@ int getUpperBound(Vehicule **sortedPtrs, int start, int end, float limit) {
 }
 
 
-
+// this runStep is the function that will our scenario move 
+// so it takes as a parameter a short period of time dt 
+// it updated the position of all the vehicules according to their velocity 
 void runStep(float dt){
     for(int i=0; i<MAX_VEHICULES; i++){
        
@@ -53,50 +56,69 @@ void runStep(float dt){
     }
 }
 
+// this function will help us to print an infection 
+// just to make the code clear and a readable output 
 void printInfection(int time, Vehicule infected, Vehicule source){
     printf("[T=%d] INFECTION: ID %d -> ID %d (Pos: %.0f)\n", 
            time, source.id, infected.id, infected.position);
 }
 
+
+// this function will 
 void infectVehicules(int time, int *infectedVehiculesNumber){
     clearGraph();
-    //the graph changes at each tie , because if i and j are tied today they mught not be after delta t or two delta t 
+    //the graph changes at each time , because if i and j are tied today they might not be after delta t or two delta t 
     Vehicule* sortedPtrs[MAX_VEHICULES];
     for(int i=0; i<MAX_VEHICULES; i++) sortedPtrs[i] = &allVehicules[i];
     qsort(sortedPtrs, MAX_VEHICULES, sizeof(Vehicule*), compareVehicles);
-
+    
+    // we will loop over each vehicule in the list
     for(int i = 0; i < MAX_VEHICULES; i++){
-        Vehicule *v1 = sortedPtrs[i];
-        
+
+        Vehicule *v1 = sortedPtrs[i];        
+        // compute its limit distance that can affect so that we don't loop over vehicule that the current one can't reach 
         float limit = v1->position + DANGER_RADIUS;
+        // getUpperBound will return the last index that can be reached within this limit 
         int lastIdx = getUpperBound(sortedPtrs, i + 1, MAX_VEHICULES - 1, limit);
         
+        // we loop over this range of vehicules 
         for(int j = i + 1; j <= lastIdx; j++){
             Vehicule *v2 = sortedPtrs[j];
+            // compute the distance between the current one and the ones in the radius 
             float dist = v2->position - v1->position;
 
-         
+            // update our edges in the graph 
             addEdge(v1->originalIndex, v2->originalIndex, dist);
             addEdge(v2->originalIndex, v1->originalIndex, dist);
-
+            
+            // compute the risk that that v1 infect v2 and also v2 infect v1
             float riskToV1 = v2->infectionProb * TRANSMISSION_RATE;
             float riskToV2 = v1->infectionProb * TRANSMISSION_RATE;
 
+            // we update the nextStepProb array of the two vehicules
             nextStepProb[v1->originalIndex] = 1.0f - (1.0f - nextStepProb[v1->originalIndex]) * (1.0f - riskToV1);
             nextStepProb[v2->originalIndex] = 1.0f - (1.0f - nextStepProb[v2->originalIndex]) * (1.0f - riskToV2);
         }
     }
-
+    // initialize a counter for the infected vehicules number  
     *infectedVehiculesNumber = 0;
+    // loop over vehicules array
     for(int i=0; i<MAX_VEHICULES; i++){
+        // update the infectionProb of each vehicule according to the infection probability array
         allVehicules[i].infectionProb = nextStepProb[i];
         
+        // here we check if the conditions are satisfied to perform the infection 
+        // condition 1 : the infectionProb higher than 0.99 
+        // condition 2 : the target vehicule shouldn't be already infected
         if(allVehicules[i].infectionProb > 0.99f && allVehicules[i].state != STATE_INFECTED){
+            // we update the state of the target vehicule
             allVehicules[i].state = STATE_INFECTED;
+            // and we set the time of infection
             allVehicules[i].infectionTime = time;
+            // we print the infection in the console 
             printInfection(time, allVehicules[i], allVehicules[i]); 
         }
-
+        // we increment the counter of infected vehicule if the condition above is satisfied
         if(allVehicules[i].state == STATE_INFECTED){
             (*infectedVehiculesNumber)++;
         }
