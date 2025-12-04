@@ -59,393 +59,161 @@ December 4, 2024}
 
 \section{Introduction}
 
-This project implements a sophisticated simulation system that models how malware propagates through a Vehicle-to-Vehicle (V2V) communication network. The system represents vehicles as nodes in a dynamic graph, with communication links as edges weighted by physical distance. The simulation demonstrates how a single compromised vehicle (Patient Zero) can spread malicious code throughout an entire vehicular network using proximity-based wireless communication.
+This project simulates malware propagation in Vehicle-to-Vehicle (V2V) networks using graph theory. Vehicles are nodes, communication links are edges weighted by distance, and we analyze how infection spreads from a Patient Zero through proximity-based wireless communication.
 
-\section{Graph Modelling and Design Decisions}
+\section{Graph Model}
 
-\subsection{Graph Structure}
+\subsection{Structure}
 
-Our implementation uses a \textbf{dynamic, undirected, weighted graph} where:
+We use a \textbf{dynamic, undirected, weighted graph}:
 
 \begin{itemize}
-    \item \textbf{Nodes (Vertices):} Represent individual vehicles, each with properties:
-    \begin{itemize}
-        \item Unique ID
-        \item Physical position on a linear road (0--5000 units)
-        \item Velocity (40--60 km/h)
-        \item Infection state (Susceptible, Infected, Recovered)
-        \item Infection probability (0.0--1.0)
-    \end{itemize}
-
-    \item \textbf{Edges:} Represent active communication links between vehicles within range
-    \begin{itemize}
-        \item Dynamically created/destroyed based on proximity
-        \item Communication range: 300 units (DANGER\_RADIUS)
-    \end{itemize}
+    \item \textbf{Nodes:} Vehicles with ID, position (0--5000), velocity (40--60 km/h), and infection state
+    \item \textbf{Edges:} Communication links within 300 units, weighted by distance
+    \item \textbf{Dynamic:} Edges update as vehicles move
 \end{itemize}
 
-\subsection{Edge Weight Justification}
+\subsection{Edge Weight: Distance}
 
-\textbf{Edge Weight = Physical Distance between vehicles}
-
-We chose distance as the edge weight for the following reasons:
-
-\begin{enumerate}
-    \item \textbf{Realism:} In wireless V2V communication, signal strength degrades with distance. Closer vehicles have stronger, more reliable connections.
-
-    \item \textbf{Propagation Time:} Distance correlates with transmission delay and reliability. Malware spreads faster between nearby vehicles.
-
-    \item \textbf{Multi-Purpose Metric:} Distance works effectively for multiple graph algorithms:
-    \begin{itemize}
-        \item Shortest path algorithms (Dijkstra) find the fastest propagation routes
-        \item MST algorithms (Prim) identify the backbone communication structure
-        \item Clustering algorithms identify groups of vehicles in close proximity
-    \end{itemize}
-
-    \item \textbf{Computational Efficiency:} Distance is simple to compute: $|position_i - position_j|$
-\end{enumerate}
+Distance between vehicles is used because: (1) it models realistic signal degradation, (2) correlates with transmission delay, (3) works for multiple algorithms (Dijkstra, MST, clustering), and (4) is computationally simple: $|position_i - position_j|$.
 
 \subsection{Key Assumptions}
 
-\begin{enumerate}
-    \item \textbf{Linear Road Model:} Vehicles travel on a straight road (simplified from 2D/3D space)
-    \item \textbf{Constant Velocity:} Each vehicle maintains constant speed during simulation
-    \item \textbf{Symmetric Communication:} If vehicle A can communicate with B, then B can communicate with A (undirected graph)
-    \item \textbf{Range-Based Connectivity:} Vehicles connect only if within 300 units of each other
-    \item \textbf{Epidemic Model:} Uses SIR-like dynamics (Susceptible $\rightarrow$ Infected $\rightarrow$ Recovered)
-    \item \textbf{Transmission Rate:} 10\% infection risk per time step of contact
-\end{enumerate}
+Linear road, constant vehicle velocity, symmetric communication, 300-unit range, SIR epidemic model, 10\% infection rate per contact.
 
-\section{Attack Scenario}
+\section{Scenario: "Phantom Tracker" Malware}
 
-\subsection{Malware Description: ``Phantom Tracker''}
+\textbf{Description:} Vehicular malware exploiting DSRC protocol vulnerabilities to intercept GPS data, harvest authentication tokens, and create backdoors for remote control.
 
-\textbf{Phantom Tracker} is a sophisticated vehicular malware designed to compromise V2V communication systems. The malware operates as follows:
+\textbf{Initial Infection:} Phishing attack on vehicle owner's mobile app (Patient Zero: Vehicle ID 404).
 
-\begin{itemize}
-    \item \textbf{Initial Infection Vector:} Installed on a compromised vehicle (ID: 404) through a phishing attack on the vehicle owner's mobile app
-    \item \textbf{Propagation Mechanism:} Exploits vulnerabilities in the DSRC (Dedicated Short-Range Communications) protocol
-    \item \textbf{Payload:}
-    \begin{itemize}
-        \item Intercepts GPS coordinates and driving patterns
-        \item Harvests authentication tokens for connected services
-        \item Creates backdoor for remote command-and-control
-        \item Spreads copies to neighboring vehicles via V2V beacons
-    \end{itemize}
-\end{itemize}
+\textbf{Impact:} Compromises telemetry systems, GPS, connected devices, and degrades safety communications.
 
-\subsection{Impacted Assets}
+\textbf{Propagation:} In our 50-vehicle simulation: T=9 (first 4 infections), T=20 (38\% infected), T=40 (90\% infected), T=60 (near-complete compromise).
 
-\begin{itemize}
-    \item \textbf{Primary:} Vehicle telemetry systems, GPS navigation
-    \item \textbf{Secondary:} Connected mobile devices, smart key systems
-    \item \textbf{Tertiary:} Cloud-connected vehicle services (remote start, diagnostics)
-    \item \textbf{Network Impact:} Degrades V2V safety communications (collision warnings, emergency braking)
-\end{itemize}
+\section{Graph Algorithms}
 
-\subsection{Attacker Profile}
+\subsection{1. Cluster Detection (Disjoint Set Union)}
 
-\begin{itemize}
-    \item \textbf{Sophistication:} Advanced Persistent Threat (APT)
-    \item \textbf{Motivation:} Financial gain through stolen data, potential for ransomware
-    \item \textbf{Capabilities:}
-    \begin{itemize}
-        \item Deep knowledge of automotive protocols (CAN bus, DSRC)
-        \item Reverse-engineering of vehicle firmware
-        \item Social engineering for initial compromise
-    \end{itemize}
-    \item \textbf{Target:} Urban areas with high vehicle density for maximum spread
-\end{itemize}
+\textbf{Purpose:} Identify isolated vehicle communities.
 
-\subsection{Propagation Timeline}
+\textbf{Method:} Union-Find with path compression. Time: $O(E \cdot \alpha(V)) \approx O(E)$.
 
-Based on our simulation with 50 vehicles:
-\begin{itemize}
-    \item \textbf{T=0:} Patient Zero (ID 404) starts at road center
-    \item \textbf{T=9:} First wave of infections (4 vehicles within range)
-    \item \textbf{T=20:} 19 vehicles infected (38\% of fleet)
-    \item \textbf{T=40:} 45 vehicles infected (90\% of fleet)
-    \item \textbf{T=60:} Near-complete network compromise
-\end{itemize}
+\textbf{Insight:} Multiple clusters create natural containment zones preventing spread.
 
-\section{Graph Algorithms Implementation}
+\subsection{2. Fastest Path (Dijkstra with Min-Heap)}
 
-Our system implements \textbf{four specialized graph algorithms} to analyze malware propagation:
+\textbf{Purpose:} Find optimal propagation route from Patient Zero to target.
 
-\subsection{Algorithm 1: Infection Spread via Cluster Detection (DSU)}
+\textbf{Method:} Binary min-heap priority queue for efficient vertex selection. Time: $O((V+E) \log V)$.
 
-\textbf{Algorithm:} Disjoint Set Union (Union-Find)\\
-\textbf{Purpose:} Identify isolated communities of vehicles that can infect each other
+\textbf{Insight:} Blocking vehicles on critical paths can prevent infection spread.
 
-\textbf{Justification:}
-\begin{itemize}
-    \item Detects which groups of vehicles form connected components
-    \item Essential for understanding if the network fragments into isolated clusters
-    \item Helps identify if certain vehicle groups are unreachable by the infection
-    \item Time Complexity: $O(E \cdot \alpha(V)) \approx O(E)$ with path compression
-\end{itemize}
+\subsection{3. Network Backbone (Prim's MST)}
 
-\textbf{Implementation Details:}
-\begin{itemize}
-    \item Uses rank-based union and path compression for optimization
-    \item Processes all edges to merge connected vehicles
-    \item Outputs distinct communities with their member vehicle IDs
-\end{itemize}
+\textbf{Purpose:} Identify core communication infrastructure.
 
-\textbf{Security Insight:} If multiple clusters exist, the infection cannot spread between them, creating natural containment zones.
+\textbf{Method:} Minimum spanning tree showing minimal connections for connectivity. Time: $O(V^2)$.
 
-\subsection{Algorithm 2: Fastest Propagation Path (Dijkstra's Algorithm)}
+\textbf{Insight:} MST edges are the most efficient propagation skeleton to monitor.
 
-\textbf{Algorithm:} Dijkstra's Shortest Path with Min-Heap Optimization\\
-\textbf{Purpose:} Find the optimal route for malware to reach a target vehicle
+\subsection{4. Critical Hubs (Degree Centrality)}
 
-\textbf{Justification:}
-\begin{itemize}
-    \item Identifies the minimum-weight path from Patient Zero to any target
-    \item Reveals the most vulnerable propagation routes
-    \item Critical for predicting which vehicles will be infected next
-    \item Time Complexity: $O((V+E) \log V)$ with binary min-heap priority queue
-\end{itemize}
+\textbf{Purpose:} Find super-spreader vehicles with most connections.
 
-\textbf{Implementation Details:}
-\begin{itemize}
-    \item Uses custom binary min-heap for efficient priority queue operations
-    \item Heap operations: heapifyUp, heapifyDown for $O(\log V)$ insert/extract
-    \item Maintains distance array tracking shortest path to each node
-    \item Reconstructs complete path using predecessor tracking
-    \item Handles disconnected graphs gracefully
-    \item Early termination when target node is reached
-\end{itemize}
+\textbf{Method:} Count edges per vertex. Time: $O(V)$.
 
-\textbf{Security Insight:} Blocking vehicles along this critical path could delay or prevent infection spread to high-value targets.
-
-\subsection{Algorithm 3: Backbone of Propagation (Prim's MST)}
-
-\textbf{Algorithm:} Prim's Minimum Spanning Tree\\
-\textbf{Purpose:} Identify the core communication infrastructure
-
-\textbf{Justification:}
-\begin{itemize}
-    \item Reveals the minimal set of connections that maintain network connectivity
-    \item Shows which vehicle-to-vehicle links are most critical for propagation
-    \item Useful for identifying bottleneck connections to monitor or secure
-    \item Time Complexity: $O(V^2)$ with array-based implementation
-\end{itemize}
-
-\textbf{Implementation Details:}
-\begin{itemize}
-    \item Builds MST starting from vehicle 0
-    \item Selects minimum-weight edges to add unvisited nodes
-    \item Outputs the backbone links connecting the network
-\end{itemize}
-
-\textbf{Security Insight:} The MST edges represent the most efficient propagation skeleton. Securing these links could fragment the network.
-
-\subsection{Algorithm 4: Critical Vehicle Identification (Degree Centrality)}
-
-\textbf{Algorithm:} Degree Centrality Analysis\\
-\textbf{Purpose:} Identify hub vehicles with the most connections
-
-\textbf{Justification:}
-\begin{itemize}
-    \item High-degree nodes are super-spreaders in epidemic models
-    \item These vehicles have the greatest potential to accelerate infection
-    \item Prioritizing these vehicles for security updates is most effective
-    \item Time Complexity: $O(V)$
-\end{itemize}
-
-\textbf{Implementation Details:}
-\begin{itemize}
-    \item Counts edges (degree) for each vertex
-    \item Identifies the node with maximum connections
-    \item Reports the critical hub vehicle
-\end{itemize}
-
-\textbf{Security Insight:} The vehicle with the highest degree is the most dangerous spreader. If compromised, it can infect many vehicles simultaneously.
+\textbf{Insight:} High-degree nodes accelerate infection and should be prioritized for security.
 
 \section{Research Foundation}
 
-Our implementation draws from established research in vehicular network security and graph theory:
+\textbf{Key Reference:} Raya \& Hubaux (2007) - "Securing vehicular ad hoc networks" demonstrates how graph models analyze V2V vulnerability propagation and shows vehicular networks' susceptibility to epidemic attacks.
 
-\textbf{Primary Reference:}\\
-Raya, M., \& Hubaux, J. P. (2007). ``Securing vehicular ad hoc networks.'' \textit{Journal of Computer Security}, 15(1), 39--68.
+\textbf{Concepts:} SIR epidemic models, network centrality, dynamic graph algorithms, community detection.
 
-This seminal paper establishes the security challenges in V2V networks and demonstrates how graph-based models can analyze vulnerability propagation. The authors show that vehicular networks exhibit small-world properties, making them particularly susceptible to epidemic-style attacks---exactly what our simulation demonstrates.
+\section{Implementation and Results}
 
-\textbf{Additional Concepts:}
-\begin{itemize}
-    \item Epidemic models in networks (SIR/SIS models)
-    \item Network centrality measures for identifying critical nodes
-    \item Dynamic graph algorithms for time-varying topologies
-    \item Community detection in social and vehicular networks
-\end{itemize}
-
-\section{Sample Input and Output}
-
-\subsection{Configuration (config.h)}
+\subsection{Configuration}
 
 \begin{lstlisting}[language=C]
 #define MAX_VEHICULES 50        // Fleet size
 #define DANGER_RADIUS 300       // Communication range
-#define TRANSMISSION_RATE 0.10f // Infection risk per contact
+#define TRANSMISSION_RATE 0.10f // Infection risk
 #define MAX_POSITION 5000       // Road length
-#define MAX_VELOCITY 60         // Speed limit
 \end{lstlisting}
 
-\subsection{Sample Execution Output}
-
-The system produces richly formatted, color-coded output with Unicode box-drawing characters and visual indicators for enhanced user experience.
-
-\subsubsection{Simulation Header and Progress}
+\subsection{Output Screenshots}
 
 % INSERT SCREENSHOT: Main simulation header and progress bar
 \begin{figure}[h]
 \centering
-\fbox{\includegraphics[width=0.85\textwidth]{screenshot_simulation_header.png}}
-\caption{Simulation initialization and progress tracking with animated progress bar}
+\fbox{\includegraphics[width=0.8\textwidth]{screenshot_simulation_header.png}}
+\caption{Simulation progress tracking}
 \label{fig:sim_header}
 \end{figure}
-
-\subsubsection{Cluster Analysis Output}
 
 % INSERT SCREENSHOT: Cluster detection (DSU) results
 \begin{figure}[h]
 \centering
-\fbox{\includegraphics[width=0.85\textwidth]{screenshot_clusters.png}}
-\caption{Cluster analysis showing vehicle communities detected using Disjoint Set Union}
+\fbox{\includegraphics[width=0.8\textwidth]{screenshot_clusters.png}}
+\caption{Cluster analysis (DSU)}
 \label{fig:clusters}
 \end{figure}
-
-\subsubsection{Backbone Network (MST) Visualization}
 
 % INSERT SCREENSHOT: MST backbone display
 \begin{figure}[h]
 \centering
-\fbox{\includegraphics[width=0.85\textwidth]{screenshot_mst.png}}
-\caption{Network backbone visualization using Prim's MST algorithm with tree structure display}
+\fbox{\includegraphics[width=0.8\textwidth]{screenshot_mst.png}}
+\caption{Network backbone (MST)}
 \label{fig:mst}
 \end{figure}
-
-\subsubsection{Critical Hub Identification}
 
 % INSERT SCREENSHOT: Critical hubs analysis
 \begin{figure}[h]
 \centering
-\fbox{\includegraphics[width=0.85\textwidth]{screenshot_hubs.png}}
-\caption{Critical vehicle hub identification based on degree centrality analysis}
+\fbox{\includegraphics[width=0.8\textwidth]{screenshot_hubs.png}}
+\caption{Critical hubs}
 \label{fig:hubs}
 \end{figure}
-
-\subsubsection{Optimal Path Computation}
 
 % INSERT SCREENSHOT: Dijkstra shortest path result
 \begin{figure}[h]
 \centering
-\fbox{\includegraphics[width=0.85\textwidth]{screenshot_path.png}}
-\caption{Fastest propagation path computed using min-heap optimized Dijkstra's algorithm}
+\fbox{\includegraphics[width=0.8\textwidth]{screenshot_path.png}}
+\caption{Optimal path (Dijkstra)}
 \label{fig:path}
 \end{figure}
 
-\subsection{Analysis of Results}
+\subsection{Key Results}
 
-\textbf{Observation 1:} By T=20, the network fragments into 2 clusters. This shows that vehicle distribution creates natural containment zones.
+Network fragments into 2 clusters at T=20, creating containment zones. Vehicle 523 is the critical hub with 10 connections. Optimal path from Patient Zero (404) to vehicle 933: 8 hops, 1876 units. By T=40, 90\% infected as clusters merge.
 
-\textbf{Observation 2:} Vehicle 523 becomes a critical hub with 10 connections, making it a super-spreader candidate.
+\section{Technical Details}
 
-\textbf{Observation 3:} The optimal path from Patient Zero (404) to vehicle 933 requires 8 hops with total distance 1876.00 units, demonstrating multi-hop propagation efficiently computed using the min-heap optimized Dijkstra algorithm.
+\textbf{Data Structures:} Dynamic adjacency list, binary min-heap for Dijkstra ($O(\log V)$ operations), DSU with path compression.
 
-\textbf{Observation 4:} By T=40, the clusters merge as vehicles move, and 90\% of the fleet is infected, showing the danger of dynamic topology.
+\textbf{Code Organization:} Modular design (vehicles, simulation, algorithms), proper headers, memory management, comprehensive comments.
 
-\section{Technical Implementation Highlights}
+\textbf{User Interface:} Color-coded terminal output, Unicode graphics, progress bars, interactive menu, visual tree structures, status dashboard.
 
-\subsection{Data Structures}
-
-\begin{itemize}
-    \item \textbf{Dynamic Adjacency List:} Vector-based structure with automatic resizing for efficient graph representation
-    \item \textbf{Binary Min-Heap:} Custom priority queue implementation for Dijkstra's algorithm with $O(\log V)$ operations
-    \item \textbf{Efficient Graph Representation:} $O(V+E)$ space complexity
-    \item \textbf{Spatial Optimization:} Binary search for proximity detection reduces edge creation from $O(V^2)$ to $O(V \log V)$
-    \item \textbf{Disjoint Set Union (DSU):} Path compression and rank-based union for near-constant time operations
-\end{itemize}
-
-\subsection{Code Quality}
-
-\begin{itemize}
-    \item \textbf{Modular Design:} Separate modules for vehicles, simulation, and graph algorithms
-    \item \textbf{Header Files:} Proper separation of interface and implementation
-    \item \textbf{Memory Management:} Careful allocation/deallocation to prevent leaks
-    \item \textbf{Comments:} Comprehensive documentation throughout the codebase
-\end{itemize}
-
-\subsection{User Interface and Visualization}
-
-\begin{itemize}
-    \item \textbf{Rich Terminal Output:} ANSI color codes for enhanced readability and visual organization
-    \item \textbf{Unicode Graphics:} Box-drawing characters and emojis for professional visual appeal
-    \item \textbf{Progress Indicators:} Real-time animated progress bars showing simulation advancement
-    \item \textbf{Interactive Menu:} User-friendly menu system allowing step-by-step analysis and exploration
-    \item \textbf{Visual Tree Structure:} MST backbone displayed as hierarchical tree with connection symbols
-    \item \textbf{Formatted Paths:} Dijkstra paths shown with directional arrows for enhanced clarity
-    \item \textbf{Status Dashboard:} Comprehensive real-time statistics display with infection counts and network metrics
-    \item \textbf{Organized Output Sections:} Clearly delineated sections for each algorithm with bordered headers
-\end{itemize}
-
-\subsection{Scalability}
-
-The system can handle:
-\begin{itemize}
-    \item Up to 1000+ vehicles (tested with 50 for demonstration)
-    \item Dynamic graph updates every time step
-    \item Multiple simultaneous algorithm analyses
-\end{itemize}
+\textbf{Performance:} $O(V+E)$ space, handles 1000+ vehicles with real-time updates.
 
 \section{Conclusion}
 
-This project successfully demonstrates how graph theory provides powerful tools for analyzing security threats in vehicular networks. Our simulation shows that:
+Graph theory effectively analyzes V2V security threats. Key findings: (1) rapid propagation (90\% in 60 steps), (2) topology matters—hubs and clusters control spread, (3) algorithms provide defense insights, (4) min-heap optimization enables real-time analysis.
 
-\begin{enumerate}
-    \item \textbf{Malware propagates rapidly} in dense vehicular environments (90\% infection in 60 time steps)
-    \item \textbf{Network topology matters:} Critical hubs and clustering significantly impact spread dynamics
-    \item \textbf{Graph algorithms provide actionable insights:} Identifying critical vehicles, optimal paths, and network backbone enables targeted defense strategies
-    \item \textbf{Dynamic networks pose unique challenges:} Time-varying topology requires continuous monitoring
-    \item \textbf{Algorithm optimization is crucial:} Min-heap implementation of Dijkstra reduces complexity from $O(V^2)$ to $O((V+E) \log V)$, enabling real-time analysis of larger networks
-    \item \textbf{User experience matters:} Rich terminal visualization with colors, Unicode graphics, and progress indicators significantly enhances analysis comprehension
-\end{enumerate}
-
-\subsection{Future Enhancements}
-
-\begin{itemize}
-    \item 2D/3D road networks with intersections and realistic traffic patterns
-    \item Heterogeneous transmission rates (different malware variants)
-    \item Mitigation strategies (patching, isolation, network segmentation)
-    \item Integration of Floyd-Warshall for all-pairs shortest path analysis
-    \item Graphical visualization with real-time animation of infection spread
-    \item Network resilience analysis and attack surface reduction strategies
-\end{itemize}
-
-\newpage
+\textbf{Future Work:} 2D/3D networks, mitigation strategies, Floyd-Warshall integration, graphical visualization, resilience analysis.
 
 \begin{thebibliography}{9}
 
 \bibitem{raya2007}
-Raya, M., \& Hubaux, J. P. (2007).
-Securing vehicular ad hoc networks.
-\textit{Journal of Computer Security}, 15(1), 39--68.
+Raya, M., \& Hubaux, J. P. (2007). Securing vehicular ad hoc networks. \textit{Journal of Computer Security}, 15(1), 39--68.
 
 \bibitem{cormen2009}
-Cormen, T. H., Leiserson, C. E., Rivest, R. L., \& Stein, C. (2009).
-\textit{Introduction to Algorithms} (3rd ed.).
-MIT Press.
+Cormen, T. H., et al. (2009). \textit{Introduction to Algorithms} (3rd ed.). MIT Press.
 
 \bibitem{newman2010}
-Newman, M. E. (2010).
-\textit{Networks: An Introduction}.
-Oxford University Press.
-
-\bibitem{keeling2005}
-Keeling, M. J., \& Eames, K. T. (2005).
-Networks and epidemic models.
-\textit{Journal of the Royal Society Interface}, 2(4), 295--307.
+Newman, M. E. (2010). \textit{Networks: An Introduction}. Oxford University Press.
 
 \end{thebibliography}
 
