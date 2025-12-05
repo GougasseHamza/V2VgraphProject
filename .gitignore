@@ -1,5 +1,6 @@
 # Compiled binaries
 simulation
+v2vsim
 a.out
 *.out
 *.exe
